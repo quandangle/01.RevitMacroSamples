@@ -31,8 +31,10 @@
             foreach (Floor fl in floors) 
             {
                 GeometryElement geoElement = fl.get_Geometry (op);
-                foreach (GeometryObject geomObj in geoElement) {
-                    if (geomObj is Solid) {
+                foreach (GeometryObject geomObj in geoElement) 
+                {
+                    if (geomObj is Solid) 
+                    {
                         solid = (Solid) geomObj;
                         if (solid.Volume > 0) break;
                     }
@@ -40,9 +42,20 @@
 
                 if (solid == null) continue;
 
-                foreach (Face f in solid.Faces) {
-                    if (f is PlanarFace && f.ComputeNormal (new UV ()).IsAlmostEqualTo (XYZ.BasisZ)) {
-                        points.AddRange (f.Triangulate ().Vertices);
+                foreach (Face f in solid.Faces) 
+                {
+                    if (f is PlanarFace && f.ComputeNormal (new UV ()).IsAlmostEqualTo (XYZ.BasisZ)) 
+                    {
+                    	  
+              		EdgeArrayArray eaa =   f.EdgeLoops;
+              		foreach (EdgeArray ea in eaa) 
+              		{
+              			foreach (Edge e in ea) 
+              			{
+              				Curve c = e.AsCurve();
+              				points.AddRange (CurveUtils.GetPointsOnCurve (c, 1 * 200));
+              			}
+              		}
 
                     }
                 }
@@ -52,6 +65,10 @@
             
             
             #region Thêm point vào Topo
+            
+            points = points.Distinct (new XYZEqualityComparer ()).ToList ();
+            points = points.Distinct (new XYEqualityComparer ()).ToList ();
+            points = points.Where (pt => pt != null).ToList ();
             
             using (TopographyEditScope tsEditScope = new TopographyEditScope (doc, "AddPoint_to_Topo_From_Floor_All"))
             {
